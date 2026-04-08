@@ -52,6 +52,7 @@ class AuthContentRoutesTest {
     private static EntityManagerFactory emf;
     private static Javalin app;
     private static int port;
+    private static AuthService authService;
 
     @BeforeAll
     static void setUp() {
@@ -65,6 +66,7 @@ class AuthContentRoutesTest {
         AuthController authController = new AuthController(
                 new AuthService(new UserDAO(emf), new JwtUtil(JWT_SECRET))
         );
+        authService = new AuthService(new UserDAO(emf), new JwtUtil(JWT_SECRET));
         ContentController contentController = new ContentController(
                 new ContentService(new ContentDAO(emf))
         );
@@ -123,8 +125,8 @@ class AuthContentRoutesTest {
     }
 
     @Test
-    void createContentShouldSucceedForAuthenticatedUser() throws Exception {
-        String token = registerAndReturnToken("student2");
+    void createContentShouldSucceedForAdminUser() throws Exception {
+        String token = registerAdminAndReturnToken("student2");
 
         HttpResponse<String> createResponse = sendJsonRequest(
                 "POST",
@@ -169,7 +171,7 @@ class AuthContentRoutesTest {
 
     @Test
     void getContentByIdShouldReturnCreatedContent() throws Exception {
-        String token = registerAndReturnToken("student3");
+        String token = registerAdminAndReturnToken("student3");
         JsonNode created = createContent(token, "Stored title", "Stored body");
 
         HttpResponse<String> response = sendRequest("GET", "/content/" + created.get("id").asInt(), null, null);
@@ -198,6 +200,19 @@ class AuthContentRoutesTest {
                 Map.of("username", username, "password", "secret123")
         );
         return readJson(response).get("token").asText();
+    }
+
+    private static String registerAdminAndReturnToken(String username) throws Exception {
+        registerAndReturnToken(username);
+        authService.addRole(username, "ADMIN");
+
+        HttpResponse<String> loginResponse = sendJsonRequest(
+                "POST",
+                "/auth/login",
+                null,
+                Map.of("username", username, "password", "secret123")
+        );
+        return readJson(loginResponse).get("token").asText();
     }
 
     private static JsonNode createContent(String token, String title, String body) throws Exception {
