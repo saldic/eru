@@ -12,9 +12,9 @@ Expected health endpoint:
 
 ## Files
 
-- [docker-compose.deploy.yml](/D:/TheFileSTATIONÆR/eru/docker-compose.deploy.yml)
-- [.env.deploy.example](/D:/TheFileSTATIONÆR/eru/.env.deploy.example)
-- [Caddyfile.example](/D:/TheFileSTATIONÆR/eru/Caddyfile.example)
+- [docker-compose.deploy.yml](/D:/TheFileSTATIONÆR/eru/deployment/docker-compose.deploy.yml)
+- [.env.deploy.example](/D:/TheFileSTATIONÆR/eru/deployment/.env.deploy.example)
+- [Caddyfile.example](/D:/TheFileSTATIONÆR/eru/deployment/Caddyfile.example)
 
 ## 1. DNS
 
@@ -57,7 +57,7 @@ CONNECTION_STR=jdbc:postgresql://postgres:5432/
 Run:
 
 ```bash
-docker compose --env-file .env -f docker-compose.deploy.yml up -d
+docker compose --env-file .env -f deployment/docker-compose.deploy.yml up -d
 ```
 
 This starts:
@@ -75,7 +75,7 @@ eru-api.dk {
 }
 ```
 
-That is also available in [Caddyfile.example](/D:/TheFileSTATIONÆR/eru/Caddyfile.example).
+That is also available in [Caddyfile.example](/D:/TheFileSTATIONÆR/eru/deployment/Caddyfile.example).
 
 ## 6. Verify
 
@@ -100,7 +100,3 @@ Recommended order:
 1. `auth.http` login
 2. `auth.http` me
 3. `content.http` protected create request
-
-## Current Status
-
-At the time of this check, `eru-api.dk` did not resolve in DNS yet, so public verification could not be completed from this environment.

@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: eru-postgres
     environment:
-      POSTGRES_DB: eru
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 7EZLAbiografstol
+      POSTGRES_DB: ${DB_NAME:-eru}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me}
     ports:
       - "5432:5432"
     volumes:
