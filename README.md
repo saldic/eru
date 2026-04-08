@@ -1,6 +1,6 @@
-# ERU Backend
+# eru Backend
 
-ERU is a backend REST API for a learning-focused scrolling platform.
+eru is a backend REST API for a learning-focused scrolling platform.
 
 The idea behind the project is simple: instead of endlessly scrolling low-value content, users should be able to browse short educational posts such as facts, quotes, and theories. The backend stores the content, exposes it through an API, and supports authentication, content management, and basic user interaction.
 
@@ -10,7 +10,7 @@ This project was developed as a 3rd semester backend exam project with a layered
 
 ## Vision
 
-The purpose of ERU is to explore how a feed-based platform can be used for something more meaningful than entertainment alone.
+The purpose of eru is to explore how a feed-based platform can be used for something more meaningful than entertainment alone.
 
 Rather than building a full-scale social platform, the project focuses on a smaller and more realistic backend scope:
 - managing educational content
@@ -272,7 +272,7 @@ The project is intentionally designed to be easy to explain in an exam setting, 
 
 ## Project Scope
 
-ERU is not meant to be a full social platform.
+eru is not meant to be a full social platform.
 It is a focused backend project built to demonstrate solid understanding of backend architecture, persistence, security, testing, and API design.
 
 The scope is deliberately practical:
