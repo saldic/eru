@@ -103,13 +103,16 @@ Used together with `User` in a many-to-many relationship for authorization.
 
 ### Protected endpoints
 
+#### USER
+
 - `GET /api/v1/auth/me`
-- `POST /api/v1/content`
-- `PUT /api/v1/content/{id}`
-- `DELETE /api/v1/content/{id}`
 - `POST /api/v1/content/{id}/interactions`
 
-### Optional endpoint
+#### ADMIN
+
+- `POST /api/v1/content`
+- `PUT /api/v1/content/{id}`
+- `DELETE /api/v1/content/{id}``r`n`r`n### Optional endpoint
 
 - `POST /api/v1/ai/elaborate`
 
@@ -241,5 +244,8 @@ These parts are safe to describe as optional or future work:
 - recommendation logic
 - concurrency/background jobs
 - deployment beyond local Docker setup
+
+
+
 
 

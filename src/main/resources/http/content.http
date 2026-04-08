@@ -1,4 +1,5 @@
 ### Create content
+# Requires ADMIN token
 POST {{url}}/content
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -29,6 +30,7 @@ GET {{url}}/content/1
 Accept: application/json
 
 ### Update content
+# Requires ADMIN token
 PUT {{url}}/content/1
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -43,6 +45,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Delete content
+# Requires ADMIN token
 DELETE {{url}}/content/1
 Authorization: Bearer {{token}}
 
