@@ -48,6 +48,7 @@ eru is built as a layered backend architecture with a clear separation of respon
 - Jackson
 - SLF4J + Logback
 - JUnit 5
+- Rest Assured + Hamcrest
 - Testcontainers
 - Docker
 - GitHub Actions
@@ -99,7 +100,7 @@ AI functionality is isolated behind a dedicated endpoint and service. The OpenAI
 
 ### Testing Strategy
 
-The project combines service-level unit tests with integration tests using Testcontainers and PostgreSQL. This makes it possible to test both isolated business logic and end-to-end route behavior against a real database.
+The project combines service-level unit tests with integration tests using Testcontainers and PostgreSQL. End-to-end API tests are written both with Java's built-in `HttpClient` and with Rest Assured, which makes it possible to test isolated business logic as well as expressive HTTP-level assertions against a real database.
   
 ---  
 
