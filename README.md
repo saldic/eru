@@ -17,7 +17,7 @@ Project overview video (max 5 min):
 https://drive.google.com/drive/folders/11miq5ZiHGOEkeZKAQC2lV419AwaSLrsV?usp=sharing
 
 Deployed application:    
-`https://eru-api.dk/api/v1/routes`
+https://eru-api.dk/api/v1/routes
 
 Source code repository:    
 https://github.com/cph-ds303/eru.git
