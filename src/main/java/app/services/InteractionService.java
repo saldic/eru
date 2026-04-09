@@ -1,6 +1,7 @@
 package app.services;
 
 import app.dtos.responses.InteractionDTO;
+import app.dtos.responses.UserContentInteractionDTO;
 import app.entities.Content;
 import app.entities.User;
 import app.entities.UserInteraction;
@@ -11,6 +12,7 @@ import app.persistence.daos.UserDAO;
 import app.persistence.daos.UserInteractionDAO;
 
 import java.util.List;
+import java.util.Comparator;
 
 public class InteractionService {
     private final UserInteractionDAO interactionDAO;
@@ -57,8 +59,23 @@ public class InteractionService {
                 .toList();
     }
 
+    public List<UserContentInteractionDTO> getByUserId(Integer userId, ReactionType reactionType) {
+        ensureUserExists(userId);
+
+        return interactionDAO.getByUserId(userId).stream()
+                .filter(interaction -> reactionType == null || interaction.getReactionType() == reactionType)
+                .sorted(Comparator.comparing(UserInteraction::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(UserContentInteractionDTO::fromEntity)
+                .toList();
+    }
+
     private void ensureContentExists(Integer contentId) {
         contentDAO.getById(contentId)
                 .orElseThrow(() -> ApiException.notFound("Content not found with id " + contentId));
+    }
+
+    private void ensureUserExists(Integer userId) {
+        userDAO.getById(userId)
+                .orElseThrow(() -> ApiException.notFound("User not found with id " + userId));
     }
 }

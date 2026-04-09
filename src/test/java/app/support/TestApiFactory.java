@@ -2,9 +2,11 @@ package app.support;
 
 import app.controllers.AuthController;
 import app.controllers.ContentController;
+import app.controllers.InteractionController;
 import app.exceptions.ApiException;
 import app.routes.AuthRoutes;
 import app.routes.ContentRoutes;
+import app.routes.InteractionRoutes;
 import app.routes.Routes;
 import io.javalin.Javalin;
 import io.javalin.util.legacy.LegacyAccessManagerKt;
@@ -20,7 +22,8 @@ public final class TestApiFactory {
 
     public static Javalin createApp(
             AuthController authController,
-            ContentController contentController
+            ContentController contentController,
+            InteractionController interactionController
     ) {
         Javalin app = Javalin.create(config -> {
             config.router.contextPath = Routes.API_CONTEXT_PATH;
@@ -45,6 +48,7 @@ public final class TestApiFactory {
 
             AuthRoutes.register(config.routes, authController);
             ContentRoutes.register(config.routes, contentController);
+            InteractionRoutes.register(config.routes, interactionController);
         });
 
         LegacyAccessManagerKt.legacyAccessManager(app, (handler, ctx, routeRoles) -> {

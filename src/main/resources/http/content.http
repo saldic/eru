@@ -61,3 +61,13 @@ Authorization: Bearer {{token}}
 ### Get interactions for content
 GET {{url}}/content/1/interactions
 Accept: application/json
+
+### Get current user's interactions
+GET {{url}}/interactions/me
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Get current user's bookmarked interactions
+GET {{url}}/interactions/me?reactionType=BOOKMARK
+Authorization: Bearer {{token}}
+Accept: application/json

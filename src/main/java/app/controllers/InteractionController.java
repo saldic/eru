@@ -3,6 +3,8 @@ package app.controllers;
 import app.dtos.internal.AuthenticatedUserDTO;
 import app.dtos.requests.InteractionRequestDTO;
 import app.dtos.responses.InteractionDTO;
+import app.dtos.responses.UserContentInteractionDTO;
+import app.entities.enums.ReactionType;
 import app.exceptions.ApiException;
 import app.services.InteractionService;
 import io.javalin.http.Context;
@@ -45,6 +47,13 @@ public class InteractionController {
         ctx.status(200).json(interactions);
     }
 
+    public void getMyInteractions(Context ctx) {
+        AuthenticatedUserDTO authenticatedUser = getAuthenticatedUser(ctx);
+        ReactionType reactionType = parseReactionType(ctx.queryParam("reactionType"));
+        List<UserContentInteractionDTO> interactions = interactionService.getByUserId(authenticatedUser.userId(), reactionType);
+        ctx.status(200).json(interactions);
+    }
+
     private static AuthenticatedUserDTO getAuthenticatedUser(Context ctx) {
         AuthenticatedUserDTO user = ctx.attribute("user");
         if (user == null) {
@@ -58,6 +67,18 @@ public class InteractionController {
             return Integer.valueOf(rawId);
         } catch (NumberFormatException e) {
             throw ApiException.badRequest("Path parameter id must be a number");
+        }
+    }
+
+    private static ReactionType parseReactionType(String rawReactionType) {
+        if (rawReactionType == null || rawReactionType.isBlank()) {
+            return null;
+        }
+
+        try {
+            return ReactionType.valueOf(rawReactionType.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw ApiException.badRequest("Invalid reaction type: " + rawReactionType);
         }
     }
 }

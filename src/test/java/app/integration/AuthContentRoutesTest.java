@@ -3,11 +3,14 @@ package app.integration;
 import app.config.hibernate.HibernateTestUtil;
 import app.controllers.AuthController;
 import app.controllers.ContentController;
+import app.controllers.InteractionController;
 import app.persistence.daos.ContentDAO;
 import app.persistence.daos.UserDAO;
+import app.persistence.daos.UserInteractionDAO;
 import app.routes.Routes;
 import app.services.AuthService;
 import app.services.ContentService;
+import app.services.InteractionService;
 import app.security.JwtUtil;
 import app.support.TestApiFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -53,6 +56,7 @@ class AuthContentRoutesTest {
     private static Javalin app;
     private static int port;
     private static AuthService authService;
+    private static ContentDAO contentDAO;
 
     @BeforeAll
     static void setUp() {
@@ -67,12 +71,14 @@ class AuthContentRoutesTest {
                 new AuthService(new UserDAO(emf), new JwtUtil(JWT_SECRET))
         );
         authService = new AuthService(new UserDAO(emf), new JwtUtil(JWT_SECRET));
-        ContentController contentController = new ContentController(
-                new ContentService(new ContentDAO(emf))
+        contentDAO = new ContentDAO(emf);
+        ContentController contentController = new ContentController(new ContentService(contentDAO));
+        InteractionController interactionController = new InteractionController(
+                new InteractionService(new UserInteractionDAO(emf), new UserDAO(emf), contentDAO)
         );
 
         port = randomPort();
-        app = TestApiFactory.createApp(authController, contentController).start(port);
+        app = TestApiFactory.createApp(authController, contentController, interactionController).start(port);
     }
 
     @AfterAll
@@ -141,6 +147,39 @@ class AuthContentRoutesTest {
         assertEquals(401, meResponse.statusCode());
         JsonNode meJson = readJson(meResponse);
         assertEquals("AUTH_UNAUTHORIZED", meJson.get("errorCode").asText());
+    }
+
+    @Test
+    void getMyInteractionsShouldReturnOnlyAuthenticatedUsersFilteredInteractions() throws Exception {
+        String token = registerAdminAndReturnToken("student4");
+        JsonNode bookmarkedContent = createContent(token, "Saved title", "Saved body");
+        JsonNode likedContent = createContent(token, "Liked title", "Liked body");
+
+        sendJsonRequest(
+                "POST",
+                "/content/" + bookmarkedContent.get("id").asInt() + "/interactions",
+                token,
+                Map.of("reactionType", "BOOKMARK")
+        );
+        sendJsonRequest(
+                "POST",
+                "/content/" + likedContent.get("id").asInt() + "/interactions",
+                token,
+                Map.of("reactionType", "LIKE")
+        );
+
+        HttpResponse<String> response = sendRequest(
+                "GET",
+                "/interactions/me?reactionType=BOOKMARK",
+                token,
+                null
+        );
+
+        assertEquals(200, response.statusCode());
+        JsonNode json = readJson(response);
+        assertEquals(1, json.size());
+        assertEquals("BOOKMARK", json.get(0).get("reactionType").asText());
+        assertEquals("Saved title", json.get(0).get("content").get("title").asText());
     }
 
     @Test

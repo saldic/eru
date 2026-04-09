@@ -1,6 +1,7 @@
 package app.services;
 
 import app.dtos.responses.InteractionDTO;
+import app.dtos.responses.UserContentInteractionDTO;
 import app.entities.Content;
 import app.entities.Role;
 import app.entities.User;
@@ -78,6 +79,30 @@ class InteractionServiceTest {
         assertEquals("Content not found with id 99", exception.getMessage());
     }
 
+    @Test
+    void getByUserIdShouldReturnSortedFilteredInteractions() {
+        FakeUserDAO userDAO = new FakeUserDAO();
+        FakeContentDAO contentDAO = new FakeContentDAO();
+        FakeInteractionDAO interactionDAO = new FakeInteractionDAO();
+        User user = user(1, "student1");
+        Content olderContent = content(10);
+        Content newerContent = content(11);
+        userDAO.seed(user);
+        contentDAO.seed(olderContent);
+        contentDAO.seed(newerContent);
+        interactionDAO.seed(interaction(1, user, olderContent, ReactionType.LIKE, LocalDateTime.now().minusDays(1)));
+        interactionDAO.seed(interaction(2, user, newerContent, ReactionType.BOOKMARK, LocalDateTime.now()));
+
+        InteractionService service = new InteractionService(interactionDAO, userDAO, contentDAO);
+
+        List<UserContentInteractionDTO> interactions = service.getByUserId(1, ReactionType.BOOKMARK);
+
+        assertEquals(1, interactions.size());
+        assertEquals(2, interactions.get(0).id());
+        assertEquals(ReactionType.BOOKMARK, interactions.get(0).reactionType());
+        assertEquals(11, interactions.get(0).content().id());
+    }
+
     private static User user(Integer id, String username) {
         User user = new User(username, "secret123");
         user.setId(id);
@@ -97,12 +122,22 @@ class InteractionServiceTest {
     }
 
     private static UserInteraction interaction(Integer id, User user, Content content, ReactionType reactionType) {
+        return interaction(id, user, content, reactionType, LocalDateTime.now());
+    }
+
+    private static UserInteraction interaction(
+            Integer id,
+            User user,
+            Content content,
+            ReactionType reactionType,
+            LocalDateTime createdAt
+    ) {
         return UserInteraction.builder()
                 .id(id)
                 .user(user)
                 .content(content)
                 .reactionType(reactionType)
-                .createdAt(LocalDateTime.now())
+                .createdAt(createdAt)
                 .build();
     }
 
@@ -182,6 +217,13 @@ class InteractionServiceTest {
                     .filter(interaction -> interaction.getUser().getId().equals(userId))
                     .filter(interaction -> interaction.getContent().getId().equals(contentId))
                     .findFirst();
+        }
+
+        @Override
+        public List<UserInteraction> getByUserId(Integer userId) {
+            return storage.values().stream()
+                    .filter(interaction -> interaction.getUser().getId().equals(userId))
+                    .toList();
         }
     }
 }
