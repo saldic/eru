@@ -20,8 +20,8 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public AuthResponseDTO register(String username, String password) {
-        User createdUser = securityDAO.createUser(username, password);
+    public AuthResponseDTO register(String firstName, String lastName, String email, String username, String password) {
+        User createdUser = securityDAO.createUser(firstName, lastName, email, username, password);
         String token = jwtUtil.generateToken(createdUser);
         logger.debug("Generated register token for userId={}", createdUser.getId());
         return new AuthResponseDTO(token, createdUser.getId(), createdUser.getUsername());
@@ -37,6 +37,10 @@ public class AuthService {
     public UserDTO addRole(String username, String role) {
         User updatedUser = securityDAO.addUserRole(username, role);
         return UserDTO.fromEntity(updatedUser);
+    }
+
+    public void logout(String token) {
+        jwtUtil.revokeToken(token);
     }
 
     public DecodedJWT verifyToken(String token) {

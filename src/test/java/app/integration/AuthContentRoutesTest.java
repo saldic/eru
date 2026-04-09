@@ -102,7 +102,13 @@ class AuthContentRoutesTest {
                 "POST",
                 "/auth/register",
                 null,
-                Map.of("username", "student1", "password", "secret123")
+                Map.of(
+                        "firstName", "Student",
+                        "lastName", "One",
+                        "email", "student1@example.com",
+                        "username", "student1",
+                        "password", "secret123"
+                )
         );
 
         assertEquals(201, registerResponse.statusCode());
@@ -122,6 +128,19 @@ class AuthContentRoutesTest {
         assertEquals("student1", loginJson.get("username").asText());
         assertEquals(1, loginJson.get("userId").asInt());
         assertTrue(loginJson.hasNonNull("token"));
+    }
+
+    @Test
+    void logoutShouldRevokeToken() throws Exception {
+        String token = registerAndReturnToken("student-logout");
+
+        HttpResponse<String> logoutResponse = sendRequest("POST", "/auth/logout", token, null);
+        assertEquals(204, logoutResponse.statusCode());
+
+        HttpResponse<String> meResponse = sendRequest("GET", "/auth/me", token, null);
+        assertEquals(401, meResponse.statusCode());
+        JsonNode meJson = readJson(meResponse);
+        assertEquals("AUTH_UNAUTHORIZED", meJson.get("errorCode").asText());
     }
 
     @Test
@@ -197,7 +216,13 @@ class AuthContentRoutesTest {
                 "POST",
                 "/auth/register",
                 null,
-                Map.of("username", username, "password", "secret123")
+                Map.of(
+                        "firstName", "Student",
+                        "lastName", "One",
+                        "email", username + "@example.com",
+                        "username", username,
+                        "password", "secret123"
+                )
         );
         return readJson(response).get("token").asText();
     }

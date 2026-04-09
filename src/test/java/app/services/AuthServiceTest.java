@@ -6,6 +6,7 @@ import app.entities.Role;
 import app.entities.User;
 import app.persistence.interfaces.ISecurityDAO;
 import app.security.JwtUtil;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AuthServiceTest {
@@ -22,7 +24,13 @@ class AuthServiceTest {
         JwtUtil jwtUtil = new JwtUtil("test-secret");
         AuthService service = new AuthService(new FakeSecurityDAO(), jwtUtil);
 
-        AuthResponseDTO response = service.register("student1", "secret123");
+        AuthResponseDTO response = service.register(
+                "Student",
+                "One",
+                "student1@example.com",
+                "student1",
+                "secret123"
+        );
         DecodedJWT decodedJWT = service.verifyToken(response.token());
 
         assertEquals(1, response.userId());
@@ -60,6 +68,17 @@ class AuthServiceTest {
         assertTrue(decodedJWT.getClaim("roles").asList(String.class).contains("USER"));
     }
 
+    @Test
+    void logoutShouldRevokeIssuedToken() {
+        JwtUtil jwtUtil = new JwtUtil("test-secret");
+        AuthService service = new AuthService(new FakeSecurityDAO(), jwtUtil);
+
+        AuthResponseDTO response = service.login("student1", "secret123");
+        service.logout(response.token());
+
+        assertThrows(JWTVerificationException.class, () -> service.verifyToken(response.token()));
+    }
+
     private static class FakeSecurityDAO implements ISecurityDAO {
 
         @Override
@@ -68,7 +87,7 @@ class AuthServiceTest {
         }
 
         @Override
-        public User createUser(String username, String password) {
+        public User createUser(String firstName, String lastName, String email, String username, String password) {
             return createTestUser(1, username, Set.of("USER"));
         }
 

@@ -3,6 +3,7 @@ package app.controllers;
 import app.dtos.internal.AuthenticatedUserDTO;
 import app.dtos.requests.AddRoleRequestDTO;
 import app.dtos.requests.AuthRequestDTO;
+import app.dtos.requests.RegisterRequestDTO;
 import app.dtos.responses.AuthResponseDTO;
 import app.dtos.responses.CurrentUserDTO;
 import app.dtos.responses.UserDTO;
@@ -32,9 +33,15 @@ public class AuthController {
     }
 
     public void register(Context ctx) {
-        AuthRequestDTO request = ctx.bodyAsClass(AuthRequestDTO.class);
+        RegisterRequestDTO request = ctx.bodyAsClass(RegisterRequestDTO.class);
         logger.info("Register request for username={}", request.username());
-        AuthResponseDTO authResponse = authService.register(request.username(), request.password());
+        AuthResponseDTO authResponse = authService.register(
+                request.firstName(),
+                request.lastName(),
+                request.email(),
+                request.username(),
+                request.password()
+        );
         logger.info("Register success for username={} userId={}", authResponse.username(), authResponse.userId());
         ctx.status(201).json(authResponse);
     }
@@ -57,6 +64,12 @@ public class AuthController {
     public void me(Context ctx) {
         AuthenticatedUserDTO authenticatedUser = getAuthenticatedUser(ctx);
         ctx.status(200).json(CurrentUserDTO.fromAuthenticatedUser(authenticatedUser));
+    }
+
+    public void logout(Context ctx) {
+        String token = getToken(ctx);
+        authService.logout(token);
+        ctx.status(204);
     }
 
     public void authenticate(Context ctx) {

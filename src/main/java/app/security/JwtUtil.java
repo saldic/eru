@@ -3,13 +3,16 @@ package app.security;
 import app.entities.User;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class JwtUtil {
@@ -18,6 +21,7 @@ public class JwtUtil {
     private final JWTVerifier verifier;
     private final String issuer;
     private final long expiryMinutes;
+    private final Map<String, Instant> revokedTokens = new ConcurrentHashMap<>();
 
     public JwtUtil(String secret) {
         this(secret, "eru-api", 60);
@@ -48,6 +52,26 @@ public class JwtUtil {
     }
 
     public DecodedJWT verifyToken(String token) {
-        return verifier.verify(token);
+        cleanupRevokedTokens();
+        DecodedJWT decodedJWT = verifier.verify(token);
+        Instant revokedUntil = revokedTokens.get(token);
+        if (revokedUntil != null && revokedUntil.isAfter(Instant.now())) {
+            throw new JWTVerificationException("Token has been revoked");
+        }
+        return decodedJWT;
+    }
+
+    public void revokeToken(String token) {
+        cleanupRevokedTokens();
+        DecodedJWT decodedJWT = verifier.verify(token);
+        Instant expiresAt = decodedJWT.getExpiresAtAsInstant();
+        if (expiresAt != null && expiresAt.isAfter(Instant.now())) {
+            revokedTokens.put(token, expiresAt);
+        }
+    }
+
+    private void cleanupRevokedTokens() {
+        Instant now = Instant.now();
+        revokedTokens.entrySet().removeIf(entry -> !entry.getValue().isAfter(now));
     }
 }

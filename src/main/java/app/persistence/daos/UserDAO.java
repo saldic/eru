@@ -144,16 +144,36 @@ public class UserDAO implements IDAO<User, Integer>, ISecurityDAO {
     }
 
     @Override
-    public User createUser(String username, String password) {
-        if (username == null || username.isBlank() || password == null || password.isBlank()) {
-            throw ApiException.badRequest("Username and password are required");
+    public User createUser(String firstName, String lastName, String email, String username, String password) {
+        if (firstName == null || firstName.isBlank()
+                || lastName == null || lastName.isBlank()
+                || email == null || email.isBlank()
+                || username == null || username.isBlank()
+                || password == null || password.isBlank()) {
+            throw ApiException.badRequest("First name, last name, email, username and password are required");
         }
 
-        if (findByUsername(username).isPresent()) {
+        String normalizedUsername = username.trim();
+        String normalizedFirstName = firstName.trim();
+        String normalizedLastName = lastName.trim();
+        String normalizedEmail = email.trim().toLowerCase();
+
+        if (!normalizedEmail.contains("@")) {
+            throw ApiException.badRequest("Email must be valid");
+        }
+
+        if (findByUsername(normalizedUsername).isPresent()) {
             throw ApiException.badRequest("Username already exists");
         }
 
-        User user = new User(username.trim(), password);
+        if (getByEmail(normalizedEmail).isPresent()) {
+            throw ApiException.badRequest("Email already exists");
+        }
+
+        User user = new User(normalizedUsername, password);
+        user.setFirstName(normalizedFirstName);
+        user.setLastName(normalizedLastName);
+        user.setEmail(normalizedEmail);
         String defaultRoleName = "USER";
 
         try (EntityManager em = emf.createEntityManager()) {

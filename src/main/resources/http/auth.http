@@ -3,6 +3,9 @@ POST {{url}}/auth/register
 Content-Type: application/json
 
 {
+  "firstName": "Student",
+  "lastName": "One",
+  "email": "student1@example.com",
   "username": "student1",
   "password": "secret123"
 }
@@ -23,6 +26,13 @@ Content-Type: application/json
 ### Current authenticated user
 GET {{url}}/auth/me
 Authorization: Bearer {{token}}
+
+###
+### Logout user
+POST {{url}}/auth/logout
+Authorization: Bearer {{token}}
+
+> {% client.global.clear("token"); %}
 
 ###
 ### Promote user to ADMIN
