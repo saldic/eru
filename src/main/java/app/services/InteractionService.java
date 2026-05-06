@@ -35,10 +35,11 @@ public class InteractionService {
         Content content = contentDAO.getById(contentId)
                 .orElseThrow(() -> ApiException.notFound("Content not found with id " + contentId));
 
-        UserInteraction interaction = interactionDAO.getByUserAndContent(userId, contentId)
+        UserInteraction interaction = interactionDAO.getByUserAndContentAndReactionType(userId, contentId, reactionType)
                 .orElseGet(() -> UserInteraction.builder()
                         .user(user)
                         .content(content)
+                        .reactionType(reactionType)
                         .build());
 
         interaction.setUser(user);

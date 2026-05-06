@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
         name = "user_interactions",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_user_interaction_user_content",
-                        columnNames = {"user_id", "content_id"}
+                        name = "uk_user_interaction_user_content_reaction",
+                        columnNames = {"user_id", "content_id", "reaction_type"}
                 )
         }
 )

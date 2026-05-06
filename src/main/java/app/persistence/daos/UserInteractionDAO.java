@@ -2,6 +2,7 @@ package app.persistence.daos;
 
 import app.config.hibernate.HibernateConfig;
 import app.entities.UserInteraction;
+import app.entities.enums.ReactionType;
 import app.exceptions.DatabaseException;
 import app.exceptions.enums.DatabaseErrorType;
 import app.persistence.interfaces.IDAO;
@@ -160,9 +161,13 @@ public class UserInteractionDAO implements IDAO<UserInteraction, Integer> {
         }
     }
 
-    public Optional<UserInteraction> getByUserAndContent(Integer userId, Integer contentId) {
-        if (userId == null || contentId == null) {
-            throw new DatabaseException("User id and content id cannot be null", DatabaseErrorType.VALIDATION);
+    public Optional<UserInteraction> getByUserAndContentAndReactionType(
+            Integer userId,
+            Integer contentId,
+            ReactionType reactionType
+    ) {
+        if (userId == null || contentId == null || reactionType == null) {
+            throw new DatabaseException("User id, content id and reaction type cannot be null", DatabaseErrorType.VALIDATION);
         }
 
         try (EntityManager em = emf.createEntityManager()) {
@@ -170,17 +175,20 @@ public class UserInteractionDAO implements IDAO<UserInteraction, Integer> {
                             "SELECT ui FROM UserInteraction ui " +
                                     "JOIN FETCH ui.user " +
                                     "JOIN FETCH ui.content " +
-                                    "WHERE ui.user.id = :userId AND ui.content.id = :contentId",
+                                    "WHERE ui.user.id = :userId " +
+                                    "AND ui.content.id = :contentId " +
+                                    "AND ui.reactionType = :reactionType",
                             UserInteraction.class
                     )
                     .setParameter("userId", userId)
                     .setParameter("contentId", contentId)
+                    .setParameter("reactionType", reactionType)
                     .setMaxResults(1)
                     .getResultList();
 
             return interactions.stream().findFirst();
         } catch (RuntimeException e) {
-            throw new DatabaseException("Get interaction by user and content failed", DatabaseErrorType.UNKNOWN, e);
+            throw new DatabaseException("Get interaction by user, content and reaction type failed", DatabaseErrorType.UNKNOWN, e);
         }
     }
 }

@@ -46,7 +46,7 @@ class InteractionServiceTest {
     }
 
     @Test
-    void createOrUpdateShouldUpdateExistingInteractionForSameUserAndContent() {
+    void createOrUpdateShouldCreateSeparateInteractionsForDifferentReactionTypes() {
         FakeUserDAO userDAO = new FakeUserDAO();
         FakeContentDAO contentDAO = new FakeContentDAO();
         FakeInteractionDAO interactionDAO = new FakeInteractionDAO();
@@ -60,8 +60,28 @@ class InteractionServiceTest {
 
         InteractionDTO interaction = service.createOrUpdate(1, 10, ReactionType.BOOKMARK);
 
-        assertEquals(7, interaction.id());
+        assertEquals(8, interaction.id());
         assertEquals(ReactionType.BOOKMARK, interaction.reactionType());
+        assertEquals(2, interactionDAO.getByContentId(10).size());
+    }
+
+    @Test
+    void createOrUpdateShouldReuseExistingInteractionForSameReactionType() {
+        FakeUserDAO userDAO = new FakeUserDAO();
+        FakeContentDAO contentDAO = new FakeContentDAO();
+        FakeInteractionDAO interactionDAO = new FakeInteractionDAO();
+        User user = user(1, "student1");
+        Content content = content(10);
+        userDAO.seed(user);
+        contentDAO.seed(content);
+        interactionDAO.seed(interaction(7, user, content, ReactionType.LIKE));
+
+        InteractionService service = new InteractionService(interactionDAO, userDAO, contentDAO);
+
+        InteractionDTO interaction = service.createOrUpdate(1, 10, ReactionType.LIKE);
+
+        assertEquals(7, interaction.id());
+        assertEquals(ReactionType.LIKE, interaction.reactionType());
         assertEquals(1, interactionDAO.getByContentId(10).size());
     }
 
@@ -212,10 +232,15 @@ class InteractionServiceTest {
         }
 
         @Override
-        public Optional<UserInteraction> getByUserAndContent(Integer userId, Integer contentId) {
+        public Optional<UserInteraction> getByUserAndContentAndReactionType(
+                Integer userId,
+                Integer contentId,
+                ReactionType reactionType
+        ) {
             return storage.values().stream()
                     .filter(interaction -> interaction.getUser().getId().equals(userId))
                     .filter(interaction -> interaction.getContent().getId().equals(contentId))
+                    .filter(interaction -> interaction.getReactionType() == reactionType)
                     .findFirst();
         }
 
