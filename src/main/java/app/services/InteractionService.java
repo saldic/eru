@@ -44,7 +44,6 @@ public class InteractionService {
 
         interaction.setUser(user);
         interaction.setContent(content);
-        interaction.setReactionType(reactionType);
 
         UserInteraction saved = interaction.getId() == null
                 ? interactionDAO.create(interaction)

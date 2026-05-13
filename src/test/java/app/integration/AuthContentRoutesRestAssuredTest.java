@@ -207,6 +207,70 @@ class AuthContentRoutesRestAssuredTest {
     }
 
     @Test
+    void authenticatedUserCanStoreMultipleReactionTypesForSameContent() {
+        String token = registerAdminAndReturnToken("student-multi-reaction");
+
+        Integer contentId =
+                given()
+                        .contentType(ContentType.JSON)
+                        .auth().oauth2(token)
+                        .body(contentPayload("Multi reaction title", "Multi reaction body"))
+                .when()
+                        .post("/content")
+                .then()
+                        .statusCode(201)
+                        .extract()
+                        .path("id");
+
+        Integer likeInteractionId =
+                given()
+                        .contentType(ContentType.JSON)
+                        .auth().oauth2(token)
+                        .body(Map.of("reactionType", "LIKE"))
+                .when()
+                        .post("/content/{id}/interactions", contentId)
+                .then()
+                        .statusCode(200)
+                        .body("reactionType", equalTo("LIKE"))
+                        .extract()
+                        .path("id");
+
+        Integer bookmarkInteractionId =
+                given()
+                        .contentType(ContentType.JSON)
+                        .auth().oauth2(token)
+                        .body(Map.of("reactionType", "BOOKMARK"))
+                .when()
+                        .post("/content/{id}/interactions", contentId)
+                .then()
+                        .statusCode(200)
+                        .body("reactionType", equalTo("BOOKMARK"))
+                        .extract()
+                        .path("id");
+
+        given()
+                .contentType(ContentType.JSON)
+                .auth().oauth2(token)
+                .body(Map.of("reactionType", "LIKE"))
+        .when()
+                .post("/content/{id}/interactions", contentId)
+        .then()
+                .statusCode(200)
+                .body("id", equalTo(likeInteractionId))
+                .body("reactionType", equalTo("LIKE"));
+
+        given()
+                .auth().oauth2(token)
+        .when()
+                .get("/interactions/me")
+        .then()
+                .statusCode(200)
+                .body("$", hasSize(2))
+                .body("find { it.id == " + likeInteractionId + " }.reactionType", equalTo("LIKE"))
+                .body("find { it.id == " + bookmarkInteractionId + " }.reactionType", equalTo("BOOKMARK"));
+    }
+
+    @Test
     void feedShouldExcludeContentUserHasAlreadyInteractedWith() {
         String adminToken = registerAdminAndReturnToken("admin-feed");
 

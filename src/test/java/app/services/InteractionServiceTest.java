@@ -46,7 +46,7 @@ class InteractionServiceTest {
     }
 
     @Test
-    void createOrUpdateShouldCreateSeparateInteractionsForDifferentReactionTypes() {
+    void createOrUpdateShouldCreateNewInteractionForDifferentReactionType() {
         FakeUserDAO userDAO = new FakeUserDAO();
         FakeContentDAO contentDAO = new FakeContentDAO();
         FakeInteractionDAO interactionDAO = new FakeInteractionDAO();

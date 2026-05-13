@@ -36,7 +36,7 @@ public class Content {
     private String body;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "content_type", nullable = false)
     private ContentType contentType;
 
     private String category;
